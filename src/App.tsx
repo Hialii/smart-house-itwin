@@ -4,6 +4,8 @@ import type { IModelConnection, ScreenViewport } from "@itwin/core-frontend";
 import { FitViewTool, IModelApp, StandardViewId } from "@itwin/core-frontend";
 import { FillCentered } from "@itwin/core-react";
 import { ProgressLinear } from "@itwin/itwinui-react";
+import ShadowStudyApi from "./ShadowStudyApi";
+import { ShadowStudyWidgetProvider } from "./ShadowStudyWidget";
 import { SmartDeviceDecorator } from "./components/decorators/SmartDeviceDecorators";
 import { SmartDeviceUIItemsProvider } from "./providers/SmartDeviceUIItemsProvider";
 import {
@@ -27,6 +29,7 @@ import {
   Viewer,
   ViewerContentToolsProvider,
   ViewerNavigationToolsProvider,
+  ViewerViewportControlOptions,
   ViewerPerformance,
   ViewerStatusbarItemsProvider,
 } from "@itwin/web-viewer-react";
@@ -44,6 +47,11 @@ const App: React.FC = () => {
   const [changesetId, setChangesetId] = useState(
     process.env.IMJS_AUTH_CLIENT_CHANGESET_ID
   );
+ 
+  const viewportOptions: ViewerViewportControlOptions = {
+    viewState: async (iModelConnection) => ShadowStudyApi.getInitialView(iModelConnection),
+  };
+  
 
   const accessToken = useAccessToken();
 
@@ -160,6 +168,7 @@ const App: React.FC = () => {
         iModelId={iModelId ?? ""}
         changeSetId={changesetId}
         authClient={authClient}
+        viewportOptions={viewportOptions}
         onIModelConnected={onIModelConnected}
         viewCreatorOptions={viewCreatorOptions}
         enablePerformanceMonitors={true} // see description in the README (https://www.npmjs.com/package/@itwin/web-viewer-react)
@@ -174,6 +183,8 @@ const App: React.FC = () => {
           }),
           new ViewerStatusbarItemsProvider(),
           new TreeWidgetUiItemsProvider(),
+          new ShadowStudyWidgetProvider(),
+          new ViewerNavigationToolsProvider(),
           new PropertyGridUiItemsProvider({
             propertyGridProps: {
               autoExpandChildCategories: true,
@@ -195,7 +206,14 @@ const App: React.FC = () => {
           }),
           new MeasureToolsUiItemsProvider(),
         ]}
-      />
+        defaultUiConfig={
+          {
+            hideStatusBar: true,
+            hideToolSettings: true,
+          }
+        }
+        theme={process.env.THEME ?? "dark"}
+      />;
     </div>
   );
 };

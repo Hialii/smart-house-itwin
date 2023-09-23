@@ -23,7 +23,7 @@ export class SmartDeviceMarker extends Marker {
          smartTable += `
          <tr>
             <th>${key}</th>
-            <th><${value}/th>
+            <th>${value}</th>
          </tr>`
       }
       const smartTableDiv = document.createElement('div');
